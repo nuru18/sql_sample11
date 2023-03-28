@@ -1,68 +1,71 @@
-BEGIN TRAN
-DECLARE @a int = 10, @b int = 15, @c int = 0
+/*
+CREATE DATABASE flower_shop; 
+*/
 
+USE flower_shop;
+/*
+CREATE TABLE flower
+(
+	id_flower INT IDENTITY PRIMARY KEY,
+	name VARCHAR(32) NOT NULL,
+	color VARCHAR(32) NOT NULL,
+	price MONEY NOT NULL,
+	size INT NOT NULL,
+);
+CREATE TABLE client
+(
+	id_client INT IDENTITY PRIMARY KEY,
+	first_name NVARCHAR(64) NOT NULL,
+	last_name NVARCHAR(64) NOT NULL
+);
+CREATE TABLE flower_order
+(
+	id_flower_order INT IDENTITY PRIMARY KEY,
+	order_type NVARCHAR(64) NOT NULL,
+	order_price INT NOT NULL,
+	id_flower INT FOREIGN KEY REFERENCES flower(id_flower),
+	id_client INT FOREIGN KEY REFERENCES client(id_client)
+);
+*/
+
+/*
+BEGIN TRANSACTION;
+DECLARE @a INT, @b INT, @c INT;
+SET @a = 10;
+SET @b = 15;
+SET @c = 0;
 IF @c >= 0
-BEGIN
-    SELECT @a + @b AS [Sum]
-    COMMIT TRAN
-END
+  BEGIN
+  SELECT @a + @b + @c;
+  END;
 ELSE
-BEGIN
-    ROLLBACK TRAN
-END
-BEGIN TRAN
-INSERT INTO Clients (FirstName, LastName, Address, Phone)
-VALUES ('John', 'Smith', '123 Main St.', '555-1234')
+  ROLLBACK TRANSACTION;
+COMMIT TRANSACTION;
+*/
 
-IF @@ERROR <> 0 OR LEN(LastName) = 0
+--------------------------------------------------------------------
+/*
+CREATE TRIGGER client_insert_trigger
+ON client
+AFTER INSERT
+AS
 BEGIN
-    ROLLBACK TRAN
+IF EXISTS (SELECT 1 FROM INSERTED WHERE last_name = '')
+BEGIN
+RAISERROR ('last_name cannot be blank', 16, 1);
+ROLLBACK TRANSACTION;
 END
+BEGIN TRANSACTION;
+INSERT INTO client (last_name, first_name)
+VALUES('pp', 'Õîðîø');
+COMMIT TRANSACTION
+*/
+
+--------------------------------------------------------------------
+
+BEGIN TRANSACTION;
+IF (SELECT isPaid FROM flower_order WHERE id_client = 2) = 0
+  ROLLBACK TRANSACTION;
 ELSE
-BEGIN
-    COMMIT TRAN
-END
-BEGIN TRAN
-DECLARE @Debt DECIMAL(18, 2) = (SELECT SUM(AmountDue) FROM Orders WHERE CustomerId = 1)
-
-IF @Debt <= 0
-BEGIN
-    INSERT INTO Orders (CustomerId, OrderDate, AmountDue)
-    VALUES (1, GETDATE(), 100.00)
-
-    IF @@ERROR <> 0
-    BEGIN
-        ROLLBACK TRAN
-    END
-    ELSE
-    BEGIN
-        COMMIT TRAN
-    END
-END
-ELSE
-BEGIN
-    ROLLBACK TRAN
-END
-BEGIN TRAN
-
-INSERT INTO Customers (FirstName, LastName, Email)
-VALUES ('John', 'Smith', 'john.smith@example.com')
-
-IF @@ERROR <> 0
-BEGIN
-    ROLLBACK TRAN
-END
-ELSE
-BEGIN
-    INSERT INTO Orders (CustomerId, OrderDate, AmountDue)
-    VALUES (SCOPE_IDENTITY(), GETDATE(), 100.00)
-
-    IF @@ERROR <> 0
-    BEGIN
-        ROLLBACK TRAN
-    END
-    ELSE
-    BEGIN
-        COMMIT TRAN
-    END
-END
+  INSERT INTO flower_order VALUES ('ýòî ìîé çàêàç', '3000', 4, 4, 0);
+COMMIT TRANSACTION;

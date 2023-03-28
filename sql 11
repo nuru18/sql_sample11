@@ -1,0 +1,68 @@
+BEGIN TRAN
+DECLARE @a int = 10, @b int = 15, @c int = 0
+
+IF @c >= 0
+BEGIN
+    SELECT @a + @b AS [Sum]
+    COMMIT TRAN
+END
+ELSE
+BEGIN
+    ROLLBACK TRAN
+END
+BEGIN TRAN
+INSERT INTO Clients (FirstName, LastName, Address, Phone)
+VALUES ('John', 'Smith', '123 Main St.', '555-1234')
+
+IF @@ERROR <> 0 OR LEN(LastName) = 0
+BEGIN
+    ROLLBACK TRAN
+END
+ELSE
+BEGIN
+    COMMIT TRAN
+END
+BEGIN TRAN
+DECLARE @Debt DECIMAL(18, 2) = (SELECT SUM(AmountDue) FROM Orders WHERE CustomerId = 1)
+
+IF @Debt <= 0
+BEGIN
+    INSERT INTO Orders (CustomerId, OrderDate, AmountDue)
+    VALUES (1, GETDATE(), 100.00)
+
+    IF @@ERROR <> 0
+    BEGIN
+        ROLLBACK TRAN
+    END
+    ELSE
+    BEGIN
+        COMMIT TRAN
+    END
+END
+ELSE
+BEGIN
+    ROLLBACK TRAN
+END
+BEGIN TRAN
+
+INSERT INTO Customers (FirstName, LastName, Email)
+VALUES ('John', 'Smith', 'john.smith@example.com')
+
+IF @@ERROR <> 0
+BEGIN
+    ROLLBACK TRAN
+END
+ELSE
+BEGIN
+    INSERT INTO Orders (CustomerId, OrderDate, AmountDue)
+    VALUES (SCOPE_IDENTITY(), GETDATE(), 100.00)
+
+    IF @@ERROR <> 0
+    BEGIN
+        ROLLBACK TRAN
+    END
+    ELSE
+    BEGIN
+        COMMIT TRAN
+    END
+END
